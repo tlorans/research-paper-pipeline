@@ -1,0 +1,74 @@
+name: research-paper
+version: "1"
+
+# Python owns transitions. Agents only write the files in `produces`.
+# Stage order matters for `mdharness advance`. Gate `on_pass` / `on_fail`
+# jump off that list: integrity skips revise on first pass; review failure
+# lands on revise; revise then advances into review again.
+stages:
+  - id: research
+    agent: researcher
+    description: >
+      Frame the question and build a source-backed literature map.
+      Write artifacts/research.md. Do not draft the paper.
+    produces:
+      - artifacts/research.md
+
+  - id: draft
+    agent: writer
+    description: >
+      Write artifacts/paper.md from brief.md and artifacts/research.md.
+      Cite only sources listed in the research map.
+    produces:
+      - artifacts/paper.md
+
+  - id: integrity
+    agent: auditor
+    description: >
+      Audit citations and claim-source alignment in artifacts/paper.md.
+      Do not edit the paper. Write artifacts/integrity.md, then record the gate.
+    produces:
+      - artifacts/integrity.md
+    gate:
+      field: score
+      op: gte
+      threshold: 8
+      on_fail: draft
+      on_pass: review
+      max_attempts: 3
+
+  - id: revise
+    agent: writer
+    description: >
+      Apply artifacts/review.md. Update artifacts/paper.md and write
+      artifacts/response.md (point-by-point). Then advance back to review.
+    produces:
+      - artifacts/paper.md
+      - artifacts/response.md
+
+  - id: review
+    agent: reviewer
+    description: >
+      Hostile peer review of artifacts/paper.md. Do not edit the paper.
+      Write artifacts/review.md, then record the gate.
+    produces:
+      - artifacts/review.md
+    gate:
+      field: score
+      op: gte
+      threshold: 7
+      on_fail: revise
+      on_pass: finalize
+      max_attempts: 3
+
+  - id: finalize
+    agent: formatter
+    description: >
+      Assemble a submission-ready markdown manuscript from artifacts/paper.md.
+      Write artifacts/manuscript.md. Do not change the argument.
+    produces:
+      - artifacts/manuscript.md
+
+  - id: done
+    description: Pipeline complete.
+    terminal: true
