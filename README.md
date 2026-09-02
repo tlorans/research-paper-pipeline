@@ -8,7 +8,7 @@ review. This repo only owns **order, retries, and durable state**.
 
 ```
 ARS academic-pipeline (dropped)     this repo
-──────────────────────────────     ─────────────────────────
+------------------------------     -------------------------
 detect stage                       pipeline.yaml + state.json
 dispatch skill                     agents/*.md (thin)
 integrity / review loops           mdharness gates
@@ -16,23 +16,24 @@ Material Passport                  state.json + HANDOFF.md
 ```
 
 ```
-research ──▶ write ──▶ integrity ──┐
-              ▲                    │ fail
-              └───────────────────┘
-                                   │ pass
-                                   ▼
-review ──▶ revise ──▶ rereview ──┐──▶ final-integrity ──▶ finalize ──▶ summary
-              ▲                  │ fail         │ fail
-              └─────────────────┘              │
-                    ▲                           │
-                    └──────────────────────────┘
+research --> write --> integrity --+
+              ^                    | fail
+              +--------------------+
+                                   | pass
+                                   v
+review --> revise --> rereview --+--> final-integrity --> finalize --> summary
+              ^                  | fail         | fail
+              +------------------+              |
+                    ^                           |
+                    +---------------------------+
 ```
 
 ## Why the skills are not in this git tree
 
 ARS is licensed **CC BY-NC 4.0**. Copying those files into an MIT repo would
-mix licenses. `scripts/link-ars.sh` clones ARS next to the pipeline and
-symlinks the skills into `.grok/skills/` and `.claude/skills/`.
+mix licenses. `scripts/link_ars.py` clones ARS next to the pipeline and
+links the skills into `.grok/skills/` and `.claude/skills/` (symlink,
+Windows junction, or copy — whichever the OS allows).
 
 `academic-pipeline/SKILL.md` is linked for reference only. Do not run it —
 it is a second orchestrator.
@@ -42,9 +43,13 @@ it is a second orchestrator.
 ```bash
 git clone https://github.com/tlorans/research-paper-pipeline.git
 cd research-paper-pipeline
-scripts/link-ars.sh
+uv run python scripts/link_ars.py
 uv sync
 ```
+
+Same command on Windows (PowerShell or cmd), macOS, and Linux. Optional
+wrappers: `scripts/link-ars.ps1`, `scripts/link-ars.sh`. Use
+`uv run python scripts/link_ars.py --update` to pull ARS again.
 
 Edit `brief.md`. Then:
 

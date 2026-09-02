@@ -11,11 +11,12 @@ Prefer `uv run mdharness …` when uv is available.
 ## First run
 
 ```bash
-scripts/link-ars.sh
+uv run python scripts/link_ars.py
 uv sync
 ```
 
-If `vendor/academic-research-skills/` is missing, stop and run the script.
+If `vendor/academic-research-skills/` is missing, stop and run that command
+(Windows, macOS, and Linux).
 
 ## Every turn
 
