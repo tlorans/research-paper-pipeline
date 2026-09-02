@@ -26,7 +26,7 @@ Run `uv run mdharness next` and pick the mode:
 
 Inputs:
 
-- write — `brief.md` plus `artifacts/01-research/`
+- write — `brief.md` plus `artifacts/01-research/` (and `artifacts/00-brief/` if present)
 - revise — current paper from `artifacts/02-write/` or a previous `artifacts/05-revise/`, plus `artifacts/04-review/` and if present `artifacts/06-rereview/` and integrity reports
 - finalize — latest revised paper plus `brief.md` style line
 

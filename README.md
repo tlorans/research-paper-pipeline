@@ -4,7 +4,8 @@ mdharness control plane for
 [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills).
 
 The existing ARS skills do the research, writing, integrity check, and
-review. This repo only owns **order, retries, and durable state**.
+review. This repo owns **order, retries, durable state**, and the
+pre-research `brief` intake (`skills/define-brief/`).
 
 ```
 ARS academic-pipeline (dropped)     this repo
@@ -16,11 +17,11 @@ Material Passport                  state.json + HANDOFF.md
 ```
 
 ```
-research --> write --> integrity --+
-              ^                    | fail
-              +--------------------+
-                                   | pass
-                                   v
+brief --> research --> write --> integrity --+
+                        ^                    | fail
+                        +--------------------+
+                                             | pass
+                                             v
 review --> revise --> rereview --+--> final-integrity --> finalize --> summary
               ^                  | fail         | fail
               +------------------+              |
@@ -51,16 +52,20 @@ Same command on Windows (PowerShell or cmd), macOS, and Linux. Optional
 wrappers: `scripts/link-ars.ps1`, `scripts/link-ars.sh`. Use
 `uv run python scripts/link_ars.py --update` to pull ARS again.
 
-Edit `brief.md`. Then:
+Then:
 
 ```bash
 uv run mdharness launch grok
 ```
 
+The first stage interviews you and writes `brief.md`. You can also fill
+`brief.md` yourself before starting; the brief stage will confirm it.
+
 ## What each dispatcher loads
 
-| stage | dispatcher | ARS file | mode |
+| stage | dispatcher | skill | mode |
 |---|---|---|---|
+| brief | briefer | `skills/define-brief/SKILL.md` | interview / confirm |
 | research | researcher | `deep-research/SKILL.md` | full / socratic / quick / systematic-review |
 | write | writer | `academic-paper/SKILL.md` | full |
 | integrity | auditor | `integrity_verification_agent.md` | pre-review |
@@ -74,7 +79,8 @@ uv run mdharness launch grok
 See `references/ars-dispatch.md`.
 
 mdharness only checks that `artifacts/<stage>/HANDOFF.md` exists. The skill
-is free to write the rest of that folder however ARS specifies.
+is free to write the rest of that folder (and, for `brief`, the root
+`brief.md`) however it specifies.
 
 ## License
 

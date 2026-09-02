@@ -1,15 +1,24 @@
 name: research-paper
-version: "2"
+version: "3"
 
 # mdharness is the orchestrator. Academic Research Skills do the work.
-# Clone ARS with scripts/link-ars.sh before the first run.
+# Clone ARS with scripts/link_ars.py before the first run.
 #
-# ARS map (academic-pipeline SKILL.md):
+# This repo adds `brief` in front of ARS. ARS map after that:
 #   1 research → 2 write → 2.5 integrity → 3 review → 4 revise
 #   → 3' re-review → 4.5 final integrity → 5 finalize → 6 summary
 #
 # Re-revise (ARS 4') is another visit to `revise` when re-review fails.
 stages:
+  - id: brief
+    agent: briefer
+    description: >
+      Interview the human to fill brief.md (skill: skills/define-brief/SKILL.md).
+      Do not spawn a subagent. Follow agents/briefer.md in this conversation.
+      Write artifacts/00-brief/HANDOFF.md only after the human approves the brief.
+    produces:
+      - artifacts/00-brief/HANDOFF.md
+
   - id: research
     agent: researcher
     description: >

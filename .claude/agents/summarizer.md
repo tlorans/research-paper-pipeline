@@ -12,6 +12,7 @@ mdharness already owns transitions. Running it would start a second machine.
 ## Inputs
 
 - `brief.md`
+- `artifacts/00-brief/` if present
 - `state.json` (read only)
 - every `artifacts/*/HANDOFF.md`
 

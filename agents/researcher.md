@@ -24,6 +24,8 @@ Read `brief.md`.
 - otherwise `full`
 
 Pass the brief topic and constraints into that skill as its user request.
+If `artifacts/00-brief/research-plan.md` exists, pass it too. That plan is
+input to deep-research, not a replacement for it.
 
 ## Workspace
 

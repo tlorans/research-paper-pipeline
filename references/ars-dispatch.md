@@ -5,6 +5,7 @@ project keeps its **skills** and drops its **state machine**.
 
 | ARS stage | mdharness id | skill file | mode | produces |
 |---|---|---|---|---|
+| (this repo) | `brief` | `skills/define-brief/SKILL.md` | interview / confirm | `brief.md`, `artifacts/00-brief/HANDOFF.md` |
 | 1 RESEARCH | `research` | `deep-research/SKILL.md` | full / socratic / quick / systematic-review | `artifacts/01-research/HANDOFF.md` |
 | 2 WRITE | `write` | `academic-paper/SKILL.md` | full | `artifacts/02-write/HANDOFF.md` |
 | 2.5 INTEGRITY | `integrity` | `academic-pipeline/agents/integrity_verification_agent.md` | pre-review | `artifacts/03-integrity/HANDOFF.md` |

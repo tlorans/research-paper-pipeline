@@ -1,7 +1,8 @@
 # Brief
 
-Fill this before `uv run mdharness start`. Dispatchers pass it into the
-Academic Research Skills skills.
+The `brief` stage fills this with the human. You can also edit it yourself
+before `uv run mdharness start`. Later dispatchers pass it into Academic
+Research Skills.
 
 ## Topic
 

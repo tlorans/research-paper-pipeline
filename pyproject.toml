@@ -1,7 +1,7 @@
 [project]
 name = "research-paper-pipeline"
 version = "0.1.0"
-description = "mdharness research-paper pipeline (research → draft → integrity → review → revise → finalize)"
+description = "mdharness research-paper pipeline (brief → research → draft → integrity → review → revise → finalize)"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

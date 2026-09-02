@@ -94,6 +94,26 @@ def link(src: Path, dest: Path) -> None:
     print(f"{kind:10} {dest} -> {src}")
 
 
+def sync_repo_runtime_files(root: Path) -> None:
+    """Copy this repo's dispatchers and skills next to the ARS links."""
+    agents_src = root / "agents"
+    skills_src = root / "skills"
+    for runtime in (root / ".grok", root / ".claude"):
+        dest_agents = runtime / "agents"
+        dest_agents.mkdir(parents=True, exist_ok=True)
+        if agents_src.is_dir():
+            for agent in sorted(agents_src.glob("*.md")):
+                dest = dest_agents / agent.name
+                dest.write_text(agent.read_text(encoding="utf-8"), encoding="utf-8")
+                print(f"{'copied':10} {dest}")
+        dest_skills = runtime / "skills"
+        dest_skills.mkdir(parents=True, exist_ok=True)
+        if skills_src.is_dir():
+            for skill in sorted(skills_src.iterdir()):
+                if (skill / "SKILL.md").is_file():
+                    link(skill, dest_skills / skill.name)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -123,8 +143,10 @@ def main() -> int:
         link(integrity, runtime / "agents" / "integrity_verification_agent.md")
         link(vendor / "academic-pipeline", runtime / "skills" / "academic-pipeline")
 
+    sync_repo_runtime_files(root)
+
     print()
-    print("ARS skills are on disk. Fill brief.md, then:")
+    print("ARS skills are on disk. The brief stage fills brief.md with you:")
     print("  uv sync")
     print("  uv run mdharness launch grok")
     return 0
