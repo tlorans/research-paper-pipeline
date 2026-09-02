@@ -1,73 +1,111 @@
 name: research-paper
-version: "1"
+version: "2"
 
-# Python owns transitions. Agents only write the files in `produces`.
-# Stage order matters for `mdharness advance`. Gate `on_pass` / `on_fail`
-# jump off that list: integrity skips revise on first pass; review failure
-# lands on revise; revise then advances into review again.
+# mdharness is the orchestrator. Academic Research Skills do the work.
+# Clone ARS with scripts/link-ars.sh before the first run.
+#
+# ARS map (academic-pipeline SKILL.md):
+#   1 research → 2 write → 2.5 integrity → 3 review → 4 revise
+#   → 3' re-review → 4.5 final integrity → 5 finalize → 6 summary
+#
+# Re-revise (ARS 4') is another visit to `revise` when re-review fails.
 stages:
   - id: research
     agent: researcher
     description: >
-      Frame the question and build a source-backed literature map.
-      Write artifacts/research.md. Do not draft the paper.
+      Dispatch deep-research (mode from brief.md, default full).
+      Follow vendor/academic-research-skills/deep-research/SKILL.md.
+      Write artifacts/01-research/HANDOFF.md when that skill is done.
     produces:
-      - artifacts/research.md
+      - artifacts/01-research/HANDOFF.md
 
-  - id: draft
+  - id: write
     agent: writer
     description: >
-      Write artifacts/paper.md from brief.md and artifacts/research.md.
-      Cite only sources listed in the research map.
+      Dispatch academic-paper in full mode on the Stage 1 handoff.
+      Follow vendor/academic-research-skills/academic-paper/SKILL.md.
+      Write artifacts/02-write/HANDOFF.md.
     produces:
-      - artifacts/paper.md
+      - artifacts/02-write/HANDOFF.md
 
   - id: integrity
     agent: auditor
     description: >
-      Audit citations and claim-source alignment in artifacts/paper.md.
-      Do not edit the paper. Write artifacts/integrity.md, then record the gate.
+      Dispatch integrity_verification_agent in pre-review mode.
+      Do not rewrite the paper except as that agent already allows.
+      Write artifacts/03-integrity/HANDOFF.md with score: N, then gate.
     produces:
-      - artifacts/integrity.md
+      - artifacts/03-integrity/HANDOFF.md
     gate:
       field: score
       op: gte
       threshold: 8
-      on_fail: draft
+      on_fail: write
       on_pass: review
       max_attempts: 3
-
-  - id: revise
-    agent: writer
-    description: >
-      Apply artifacts/review.md. Update artifacts/paper.md and write
-      artifacts/response.md (point-by-point). Then advance back to review.
-    produces:
-      - artifacts/paper.md
-      - artifacts/response.md
 
   - id: review
     agent: reviewer
     description: >
-      Hostile peer review of artifacts/paper.md. Do not edit the paper.
-      Write artifacts/review.md, then record the gate.
+      Dispatch academic-paper-reviewer in full mode. Read-only on the paper.
+      Follow vendor/academic-research-skills/academic-paper-reviewer/SKILL.md.
+      Write artifacts/04-review/HANDOFF.md.
     produces:
-      - artifacts/review.md
+      - artifacts/04-review/HANDOFF.md
+
+  - id: revise
+    agent: writer
+    description: >
+      Dispatch academic-paper in revision mode with the review packet.
+      Write artifacts/05-revise/HANDOFF.md (revised paper + response to reviewers).
+    produces:
+      - artifacts/05-revise/HANDOFF.md
+
+  - id: rereview
+    agent: reviewer
+    description: >
+      Dispatch academic-paper-reviewer in re-review mode.
+      Write artifacts/06-rereview/HANDOFF.md with score: N, then gate.
+    produces:
+      - artifacts/06-rereview/HANDOFF.md
     gate:
       field: score
       op: gte
       threshold: 7
       on_fail: revise
+      on_pass: final-integrity
+      max_attempts: 3
+
+  - id: final-integrity
+    agent: auditor
+    description: >
+      Dispatch integrity_verification_agent in final-check mode, from scratch.
+      Write artifacts/07-final-integrity/HANDOFF.md with score: N, then gate.
+    produces:
+      - artifacts/07-final-integrity/HANDOFF.md
+    gate:
+      field: score
+      op: gte
+      threshold: 8
+      on_fail: revise
       on_pass: finalize
       max_attempts: 3
 
   - id: finalize
-    agent: formatter
+    agent: writer
     description: >
-      Assemble a submission-ready markdown manuscript from artifacts/paper.md.
-      Write artifacts/manuscript.md. Do not change the argument.
+      Dispatch academic-paper in format-convert mode.
+      Write artifacts/08-finalize/HANDOFF.md.
     produces:
-      - artifacts/manuscript.md
+      - artifacts/08-finalize/HANDOFF.md
+
+  - id: summary
+    agent: summarizer
+    description: >
+      Write artifacts/09-summary/HANDOFF.md from state.json and prior handoffs.
+      Do not re-run academic-pipeline; mdharness already tracked the run.
+    produces:
+      - artifacts/09-summary/HANDOFF.md
 
   - id: done
     description: Pipeline complete.

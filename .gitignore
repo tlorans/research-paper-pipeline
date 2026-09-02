@@ -4,6 +4,7 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 dist/
-artifacts/*.md
+artifacts/**
 !artifacts/.gitkeep
+vendor/
 .DS_Store

@@ -1,78 +1,79 @@
 # research-paper-pipeline
 
-An [mdharness](https://github.com/tlorans/mdharness) project. Fill `brief.md`,
-then let Grok Build (or Claude Code) walk a paper through a gated stage machine.
+mdharness control plane for
+[Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills).
+
+The existing ARS skills do the research, writing, integrity check, and
+review. This repo only owns **order, retries, and durable state**.
 
 ```
-research ──▶ draft ──▶ integrity ──┐
-              ▲                    │ fail (score < 8)
+ARS academic-pipeline (dropped)     this repo
+──────────────────────────────     ─────────────────────────
+detect stage                       pipeline.yaml + state.json
+dispatch skill                     agents/*.md (thin)
+integrity / review loops           mdharness gates
+Material Passport                  state.json + HANDOFF.md
+```
+
+```
+research ──▶ write ──▶ integrity ──┐
+              ▲                    │ fail
               └───────────────────┘
                                    │ pass
                                    ▼
-                 ┐────────▶ review ──▶ finalize ──▶ done
-                 │              │
-                 │              │ fail (score < 7)
-                 └── revise ◀───┘
+review ──▶ revise ──▶ rereview ──┐──▶ final-integrity ──▶ finalize ──▶ summary
+              ▲                  │ fail         │ fail
+              └─────────────────┘              │
+                    ▲                           │
+                    └──────────────────────────┘
 ```
 
-Built with the [mdharness-pipeline](https://github.com/tlorans/mdharness-skill)
-skill. Stage names follow the public map in
-[Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills)
-(research → write → integrity → review → revise → finalize). This repo is
-**not** a port of that suite and does not vendor its files (that project is
-CC BY-NC 4.0). Prompts here are original.
+## Why the skills are not in this git tree
+
+ARS is licensed **CC BY-NC 4.0**. Copying those files into an MIT repo would
+mix licenses. `scripts/link-ars.sh` clones ARS next to the pipeline and
+symlinks the skills into `.grok/skills/` and `.claude/skills/`.
+
+`academic-pipeline/SKILL.md` is linked for reference only. Do not run it —
+it is a second orchestrator.
 
 ## Setup
 
 ```bash
 git clone https://github.com/tlorans/research-paper-pipeline.git
 cd research-paper-pipeline
+scripts/link-ars.sh
 uv sync
 ```
 
-Edit `brief.md` with the topic and working question.
-
-## Run with Grok
+Edit `brief.md`. Then:
 
 ```bash
 uv run mdharness launch grok
 ```
 
-Headless:
+## What each dispatcher loads
 
-```bash
-uv run mdharness launch grok --headless --always-approve
-```
-
-The orchestrator only runs `uv run mdharness next` / `record` / `gate`.
-Subagents live in `agents/` and are mirrored under `.grok/agents/` and
-`.claude/agents/`.
-
-## Agents and artifacts
-
-| stage | agent | writes | gate |
+| stage | dispatcher | ARS file | mode |
 |---|---|---|---|
-| research | researcher | `artifacts/research.md` | — |
-| draft | writer | `artifacts/paper.md` | — |
-| integrity | auditor | `artifacts/integrity.md` | score ≥ 8 or back to draft |
-| review | reviewer | `artifacts/review.md` | score ≥ 7 or back to revise |
-| revise | writer | `artifacts/paper.md`, `artifacts/response.md` | then back to review |
-| finalize | formatter | `artifacts/manuscript.md` | — |
+| research | researcher | `deep-research/SKILL.md` | full / socratic / quick / systematic-review |
+| write | writer | `academic-paper/SKILL.md` | full |
+| integrity | auditor | `integrity_verification_agent.md` | pre-review |
+| review | reviewer | `academic-paper-reviewer/SKILL.md` | full |
+| revise | writer | `academic-paper/SKILL.md` | revision |
+| rereview | reviewer | `academic-paper-reviewer/SKILL.md` | re-review |
+| final-integrity | auditor | `integrity_verification_agent.md` | final-check |
+| finalize | writer | `academic-paper/SKILL.md` | format-convert |
+| summary | summarizer | (this repo) | process record from `state.json` |
 
-Auditor and reviewer never edit the paper. The writer may not cite sources
-absent from the research map. Unverified items stay tagged `[UNVERIFIED]`.
+See `references/ars-dispatch.md`.
 
-## What this will not do
+mdharness only checks that `artifacts/<stage>/HANDOFF.md` exists. The skill
+is free to write the rest of that folder however ARS specifies.
 
-- search paywalled literature for you unless the runtime has network tools
-- compile a journal PDF
-- replace a human author or a real peer reviewer
-- guarantee that a citation exists
+## License
 
-Treat every bibliography row as a claim to check.
-
-## Related
-
-- Control plane — https://github.com/tlorans/mdharness
-- Factory skill — https://github.com/tlorans/mdharness-skill
-- Inspiration (not a dependency) — https://github.com/Imbad0202/academic-research-skills
+- This orchestration layer — MIT
+- Cloned skills under `vendor/academic-research-skills` — CC BY-NC 4.0,
+  © the ARS authors. Non-commercial scholarly use, attribution required.
+  Read their `LICENSE` / `POSITIONING.md` before you use the clone.
